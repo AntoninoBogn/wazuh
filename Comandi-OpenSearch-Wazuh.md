@@ -2,29 +2,25 @@
 
 ---
 
-## 🧩 Cluster — Stato e Allocazione
+## Cluster — Stato e Allocazione
 
+> Stato di salute del cluster e di ogni indice (`green`, `yellow`, `red`).
 ```http
 GET /_cluster/health?level=indices
 ```
-> Stato di salute del cluster e di ogni indice (`green`, `yellow`, `red`).
-
+> Stato generale del cluster.
 ```http
 GET /_cluster/health
 ```
-> Stato generale del cluster.
 
+> Spiega perché uno shard non è stato allocato (utile per indici in stato `red`).
 ```http
 GET /_cluster/allocation/explain?pretty
 ```
-> Spiega perché uno shard non è stato allocato (utile per indici in stato `red`).
 
-```http
-POST /_cluster/reroute
-```
 > Forza l’allocazione di uno shard primario non assegnato:
-
-```json
+```bash
+POST /_cluster/reroute
 {
   "commands": [
     {
@@ -41,22 +37,23 @@ POST /_cluster/reroute
 
 ---
 
-## 🧱 Shards — Stato, Allocazione, Segmenti
+##  Shards — Stato, Allocazione, Segmenti
 
-```http
+> Stato shard e motivi di mancata assegnazione.
+```bash
 GET _cat/shards?v&h=index,shard,prirep,state,unassigned.reason
 ```
-> Stato shard e motivi di mancata assegnazione.
 
-```http
+> Stato shard e nodo assegnato.
+```bash
 GET _cat/shards?v&h=index,shard,prirep,state,node
 ```
-> Stato shard e nodo assegnato.
 
-```http
+> Stato shard per gli indici `wazuh-archives`.
+```bash
 GET /_cat/shards/wazuh-archives-4.x-*?v
 ```
-> Stato shard per gli indici `wazuh-archives`.
+
 
 ```http
 GET /_cat/segments/wazuh-archives-4.x-*?v&h=index,shard,segment,count,size
@@ -67,44 +64,45 @@ GET /_cat/segments/wazuh-archives-4.x-*?v&h=index,shard,segment,count,size
 
 ## 📦 Indici — Stato, Dimensione, Documenti
 
-```http
+```bash
 GET _cat/indices?v
 ```
 > Elenco completo degli indici.
 
-```http
+```bash
 GET _cat/indices?v&h=index,health,status,store.size
 ```
 > Stato e dimensione di ogni indice.
 
-```http
+```bash
 GET _cat/indices?v&h=index,docs.count,store.size,health
 ```
 > Numero documenti, dimensione e stato di salute.
 
-```http
+```bash
 GET /wazuh-archives-4.x-*/_settings?include_defaults=true
 ```
 > Impostazioni degli indici `wazuh-archives`.
 
-```http
+```bash
 GET /_stats/store
 ```
 > Statistiche di spazio occupato per tutti gli indici.
 
 ---
 
-## 🧹 Archivi Wazuh — Pulizia e Gestione
+##  Archivi Wazuh — Pulizia e Gestione
 
-```http
+```bash
 GET /_cat/indices/wazuh-archives-4.x-*?v&h=index,docs.count,store.size
 ```
 > Verifica documenti e spazio occupato dagli archivi.
-
-```http
+> 
+> Mostra il documento più vecchio:
+```bash
 GET /wazuh-archives-4.x-*/_search
 ```
-> Mostra il documento più vecchio:
+
 
 ```json
 {
@@ -114,7 +112,7 @@ GET /wazuh-archives-4.x-*/_search
 }
 ```
 
-```http
+```bash
 POST /wazuh-archives-4.x-*/_delete_by_query
 ```
 > Cancella documenti più vecchi di 6 mesi:
@@ -131,7 +129,7 @@ POST /wazuh-archives-4.x-*/_delete_by_query
 }
 ```
 
-```http
+```bash
 POST /wazuh-archives-4.x-*/_delete_by_query?conflicts=proceed&wait_for_completion=false
 ```
 > Cancellazione parallela con slice:
@@ -149,47 +147,47 @@ POST /wazuh-archives-4.x-*/_delete_by_query?conflicts=proceed&wait_for_completio
 }
 ```
 
-```http
+```bash
 POST /wazuh-archives-4.x-*/_forcemerge?only_expunge_deletes=true
 ```
 > Compatta segmenti e libera spazio disco.
 
-```http
+```bash
 GET /_tasks?actions=indices:admin/forcemerge&detailed=true
 ```
 > Stato dei task `forcemerge`.
 
-```http
+```bash
 GET /_tasks?actions=*delete
 ```
 > Stato dei task `delete_by_query`.
 
-```http
+```bash
 GET /_tasks/<task_id>
 ```
 > Stato di un task specifico.
 
-```http
+```bash
 POST /_tasks/<task_id>/_cancel
 ```
 > Cancella un task attivo.
 
 ---
 
-## ⚙️ Opendistro / ISM — Configurazione e Ripristino
+##  Opendistro / ISM — Configurazione e Ripristino
 
-```http
+```bash
 GET _cat/indices/.opendistro-ism-config?v
 GET _cat/shards/.opendistro-ism-config?v
 ```
 > Stato dell’indice ISM e dei suoi shard.
 
-```http
+```bash
 DELETE /.opendistro-ism-config
 ```
 > Cancella l’indice ISM (utile se shard primario è `unassigned`).
 
-```http
+```bash
 PUT /.opendistro-ism-config
 ```
 > Ricrea l’indice ISM:
@@ -203,53 +201,53 @@ PUT /.opendistro-ism-config
 }
 ```
 
-```http
+```bash
 PUT /.opendistro-job-scheduler-lock
 ```
 > Ricrea l’indice di lock per job scheduler.
 
-```http
+```bash 
 PUT /.opendistro-job-scheduler-lock/_settings
 ```
 > Imposta repliche a 0.
 
-```http
+```bash
 DELETE /.opendistro-job-scheduler-lock
 ```
 > Cancella l’indice di lock (se in stato `red`).
 
-```http
+```bash
 PUT /.opendistro-ism-managed-index-history-*/_settings
 ```
 > Imposta repliche a 0 per cronologia ISM.
 
 ---
 
-## 🚨 Opendistro Alerting — Indici e Repliche
+## Opendistro Alerting — Indici e Repliche
 
-```http
+```bash
 GET _cat/indices/.opendistro-alerting-alerts?v&h=index,health,status
 GET _cat/shards/.opendistro-alerting-alerts?v
 ```
 > Stato dell’indice e shard di alerting.
 
-```http
+```bash
 PUT /.opendistro-alerting-alerts/_settings
 ```
 > Imposta repliche a 0 (può fallire se Wazuh blocca la modifica).
 
 ---
 
-## 🔐 Sicurezza / Ruoli — Permessi e Mapping
+## Sicurezza / Ruoli — Permessi e Mapping
 
-```http
+```bash
 GET _plugins/_security/api/rolesmapping/admin
 GET _plugins/_security/api/roles/admin
 GET _plugins/_security/api/tenants
 ```
 > Visualizza ruoli, mapping e tenant.
 
-```http
+```bash
 PUT _plugins/_security/api/roles/admin
 ```
 > Imposta permessi completi per `admin`:
@@ -272,7 +270,7 @@ PUT _plugins/_security/api/roles/admin
 }
 ```
 
-```http
+```bash
 PUT _plugins/_security/api/rolesmapping/admin
 ```
 > Associa l’utente `admin` al ruolo `admin`:
